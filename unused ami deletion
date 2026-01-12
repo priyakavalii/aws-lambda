@@ -1,0 +1,22 @@
+import boto3
+
+ec2 = boto3.client('ec2')
+
+def lambda_handler(event, context):
+    ami_id = 'ami-070ffae89e1dffd5e'  # Target AMI
+    try:
+        # Describe the AMI to get its snapshot(s)
+        image = ec2.describe_images(ImageIds=[ami_id])['Images'][0]
+        for block in image.get('BlockDeviceMappings', []):
+            if 'Ebs' in block:
+                snapshot_id = block['Ebs']['SnapshotId']
+                ec2.delete_snapshot(SnapshotId=snapshot_id)
+                print(f"Deleted Snapshot: {snapshot_id}")
+
+        ec2.deregister_image(ImageId=ami_id)
+        print(f"Deregistered AMI: {ami_id}")
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+    return {"status": "Completed", "AMI_Deleted": ami_id}
