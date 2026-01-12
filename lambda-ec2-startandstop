@@ -1,0 +1,27 @@
+import boto3
+
+ec2 = boto3.client('ec2')
+
+INSTANCE_IDS = [
+    "i-0d582f91413a4acc7"
+]
+
+def lambda_handler(event, context):
+    action = event.get("action")
+
+    if action == "start":
+        print("Starting EC2 instance...")
+        ec2.start_instances(InstanceIds=INSTANCE_IDS)
+
+    elif action == "stop":
+        print("Stopping EC2 instance...")
+        ec2.stop_instances(InstanceIds=INSTANCE_IDS)
+
+    else:
+        print("Invalid action received:", action)
+
+    return {
+        "status": "success",
+        "action": action,
+        "instances": INSTANCE_IDS
+    }
