@@ -1,0 +1,21 @@
+import boto3
+
+s3 = boto3.client('s3')
+BUCKET_NAME = "lamda-s3-12jan"  # updated bucket name
+
+def lambda_handler(event, context):
+    # 1️⃣ Delete all objects in the bucket
+    paginator = s3.get_paginator('list_objects_v2')
+    for page in paginator.paginate(Bucket=BUCKET_NAME):
+        if 'Contents' in page:
+            for obj in page['Contents']:
+                print(f"Deleting object: {obj['Key']}")
+                s3.delete_object(Bucket=BUCKET_NAME, Key=obj['Key'])
+    
+    # 2️⃣ Delete the bucket itself
+    print(f"Deleting bucket: {BUCKET_NAME}")
+    s3.delete_bucket(Bucket=BUCKET_NAME)
+    
+    return {
+        "message": f"Bucket '{BUCKET_NAME}' and all its contents have been deleted successfully."
+    }
